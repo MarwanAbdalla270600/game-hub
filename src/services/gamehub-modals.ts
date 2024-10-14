@@ -17,9 +17,9 @@ export interface Genre {
 }
 
 export interface Response<Results> {
-    count: number,
-    next: string,
-    previous: string,
+    count?: number,
+    next?: string | undefined,
+    previous?: string | undefined,
     results: Results[]
 }
 
