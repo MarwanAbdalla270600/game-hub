@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import "./App.css";
 import gamehubService from "./services/gamehub-service";
 import { Response, Game } from "./services/gamehub-modals";
@@ -8,6 +8,8 @@ import axios from "axios";
 function App() {
   const [games, setGames] = useState<Game[]>([]);      // Initialize games as an empty array
   const [next, setNext] = useState<string>();          // Holds the next page URL
+  const [isLoading, setLoading] = useState((false))
+  const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     gamehubService
@@ -21,22 +23,31 @@ function App() {
 
   const loadMore = () => {
     if (next) {
+      setLoading(true)
       axios
         .get<Response<Game>>(next)
-        .then((res) => {          
+        .then((res) => {
           setGames((prevGames) => [...prevGames, ...res.data.results]);
-          setNext(res.data.next);  
+          setNext(res.data.next);
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err)).finally(() => {
+          setLoading(false)
+        })
     }
   };
 
+  const searchGames = (searchValue: string) => {
+    console.log(searchValue)
+    
+  }
+
   return (
-    <div className="container py-8 mx-auto text-white">
+    <div className="container py-8 px-4 mx-auto text-white">
       <h1 className="pb-8 text-5xl font-semibold text-gray-100">
         Game Library
       </h1>
-      <GameHubList data={games} onLoadMore={loadMore}></GameHubList>
+      <input ref={searchRef} onChange={(event) => searchGames(event.target.value)} type="text" placeholder="Search for Game..." className="input input-bordered w-full mb-8" />
+      <GameHubList data={games} onLoadMore={loadMore} isLoading={isLoading}></GameHubList>
     </div>
   );
 }
